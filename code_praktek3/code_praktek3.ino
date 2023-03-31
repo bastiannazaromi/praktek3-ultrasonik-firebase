@@ -17,11 +17,11 @@ WiFiServer server(80);
 // Variable to store the HTTP request
 String header;
 
-#define WIFI_SSID "Bas"
-#define WIFI_PASSWORD "12345678"
+#define WIFI_SSID "xxxxxxxx"
+#define WIFI_PASSWORD "xxxxxxxx"
 
-#define FIREBASE_HOST "may-api-default-rtdb.firebaseio.com"
-#define FIREBASE_AUTH "DbweHY6fxxWdTmKOO0sNj0TvtMenH0w9X4oIUsJ9"
+#define FIREBASE_HOST "xxxxxxxxxx"
+#define FIREBASE_AUTH "xxxxxxxxxx"
 
 // Timer variables
 unsigned long lastTime = 0;
@@ -30,6 +30,12 @@ unsigned long timerDelay = 5000;
 // Sensor Ultrasonik
 #define echoPin D7
 #define trigPin D6
+
+String statusKipas = "";
+#define pinRelay D2
+
+#define relay_off HIGH
+#define relay_on LOW
 
 void setup() {
   Serial.begin(115200);
@@ -54,6 +60,9 @@ void setup() {
   
   pinMode(echoPin, INPUT);
   pinMode(trigPin, OUTPUT);
+
+  pinMode(pinRelay, OUTPUT);
+  digitalWrite(pinRelay, relay_off);
 }
 
 void loop() {
@@ -73,7 +82,22 @@ void loop() {
   Serial.print("Jarak : ");
   Serial.print(jarak);
   Serial.println(" cm");
-  
+
+  Serial.println();
+
+  if (Firebase.getString(firebaseData, "/status/kipas")) {
+    if  (firebaseData.dataType() == "string")
+    {
+      statusKipas = firebaseData.stringData();
+    }
+  }
+
+  if (statusKipas == "ON") {
+    Serial.println("Status Relay : ON");
+  } else {
+    Serial.println("Status Relay : OFF");
+  }
+    
   if ((millis() - lastTime) > timerDelay) {
     //Kirim Data Sensor Waterflow ke Firebase
     Firebase.setString(firebaseData, "data/jarak", jarak);
@@ -81,5 +105,6 @@ void loop() {
     lastTime = millis();
   }
 
+  Serial.println();
   delay(1000);
 }
